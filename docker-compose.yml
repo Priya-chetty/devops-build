@@ -6,3 +6,10 @@ services:
       - "8080:80"
     container_name: devops_web
 
+services:
+  app:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
