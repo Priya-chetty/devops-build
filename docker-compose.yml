@@ -1,7 +1,6 @@
 services:
-  app:
-    build: .
-    ports:
-      - "80:80"
-    environment:
-      - NODE_ENV=production
+     web:
+       build: .
+       ports:
+         - "80:80"
+       container_name: react-app
