@@ -11,3 +11,5 @@ dist/
 *.log
 *.pid
 
+node_modules/
+*.log
