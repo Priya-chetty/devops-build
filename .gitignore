@@ -1,0 +1,13 @@
+# Node/React-related (just in case)
+node_modules/
+.env
+build/
+dist/
+
+# OS files
+.DS_Store
+
+# Docker
+*.log
+*.pid
+
