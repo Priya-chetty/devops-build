@@ -2,26 +2,22 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
-        IMAGE_NAME = "priya-chetty/devops-build"
-    }
-
-    triggers {
-        pollSCM('* * * * *')  // Optional: Use GitHub webhook instead
+        DOCKER_DEV_REPO = 'priya2223/dev'
+        DOCKER_PROD_REPO = 'priya2223/prod'
+        DOCKER_CREDS = 'dockerhub-creds'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clone Repo') {
             steps {
-                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/Priya-chetty/devops-build.git'
+                git branch: env.BRANCH_NAME, url: 'https://github.com/Priya-chetty/devops-build.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    def tag = (env.BRANCH_NAME == 'master') ? 'prod' : 'dev'
-                    sh "docker build -t $IMAGE_NAME:$tag ."
+                    dockerImage = docker.build("${env.BRANCH_NAME == 'master' ? DOCKER_PROD_REPO : DOCKER_DEV_REPO}:${env.BUILD_ID}")
                 }
             }
         }
@@ -29,19 +25,19 @@ pipeline {
         stage('Push to DockerHub') {
             steps {
                 script {
-                    def tag = (env.BRANCH_NAME == 'master') ? 'prod' : 'dev'
-                    sh """
-                        echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                        docker push $IMAGE_NAME:$tag
-                    """
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDS) {
+                        dockerImage.push()
+                    }
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy Container') {
             steps {
-                echo "Would deploy to environment for ${env.BRANCH_NAME} branch"
-                // Add kubectl or docker run logic here
+                sh '''
+                docker rm -f myapp || true
+                docker run -d -p 3000:3000 --name myapp ${BRANCH_NAME == 'master' ? DOCKER_PROD_REPO : DOCKER_DEV_REPO}:${BUILD_ID}
+                '''
             }
         }
     }
