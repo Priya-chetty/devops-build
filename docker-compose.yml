@@ -3,12 +3,12 @@ services:
   web:
     build: ./build
     ports:
-      - "8080:80"
+      - "8081:80"
     container_name: devops_web
 
-services:
-     web:
-       build: .
-       ports:
-         - "80:80"
-       container_name: react-app
+#services:
+#     web:
+#      build: .
+#       ports:
+#         - "80:80"
+#       container_name: react-app
